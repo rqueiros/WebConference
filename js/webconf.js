@@ -1,5 +1,15 @@
 window.onload = function() {
   const btnRegister = document.getElementById("btnRegister");
+  const aSponsors = document.getElementById("aSponsors");
+
+  aSponsors.addEventListener("click", function() {    
+    document.getElementById("sponsors").scrollIntoView({behavior: 'smooth'})
+  })
+
+  aSponsors.addEventListener("mouseover", function() {    
+    console.log("entrei")
+    document.getElementById("aSponsors").style.cursor = "pointer";
+  })
 
   btnRegister.addEventListener("click", function() {
     swal({
