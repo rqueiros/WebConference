@@ -1,23 +1,67 @@
 window.onload = function() {
   const urlBase = "https://fcawebbook.herokuapp.com"
 
-
-  const btnRegister = document.getElementById("btnRegister");
-  const aSponsors = document.getElementById("aSponsors");
+  const btnLogin = document.getElementById("btnLogin")
+  const btnRegister = document.getElementById("btnRegister")
+  const aSponsors = document.getElementById("aSponsors")
 
   aSponsors.addEventListener("click", function() {    
     document.getElementById("sponsors").scrollIntoView({behavior: 'smooth'})
   })
 
-  aSponsors.addEventListener("mouseover", function() {    
-    console.log("entrei")
-    let a = 2
-    let b = 3
-    let c = a + b
-    c
+  aSponsors.addEventListener("mouseover", function() {       
     document.getElementById("aSponsors").style.cursor = "pointer";
   })
 
+
+
+  // Autenticar administrador na área privada
+  btnLogin.addEventListener("click", function() {
+    swal({
+      title: "Acesso à área de gestão da WebConference",
+      html:
+      '<input id="txtEmail" class="swal2-input" placeholder="e-mail">' +
+      '<input id="txtPass" class="swal2-input" placeholder="password">',      
+      showCancelButton: true,
+      confirmButtonText: "Entrar",
+      cancelButtonText: "Cancelar",
+      showLoaderOnConfirm: true,
+      preConfirm: () => {
+        const email = document.getElementById('txtEmail').value
+        const pass = document.getElementById('txtPass').value
+        return fetch(`${urlBase}/signin`, {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },          
+          method: "POST",
+          body: `email=${email}&password=${pass}`
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(response.statusText);
+            }
+            return response.json();
+          })
+          .catch(error => {
+            swal.showValidationError(`Pedido falhado: ${error}`);
+          });
+      },
+      allowOutsideClick: () => !swal.isLoading()
+    }).then(result => {
+      console.log(result.value)
+      
+      if (result.value.sucesss) {                       
+          swal({title: "Autenticação feita com sucesso!"})
+          window.location.replace("admin/participants.html")  
+        } else {
+          swal({title: `${result.value.message.pt}`})  
+        }
+      
+    });
+  });
+
+
+  // Registar participante
   btnRegister.addEventListener("click", function() {
     swal({
       title: "Inscrição na WebConference",
@@ -73,8 +117,8 @@ window.onload = function() {
   for (const speaker of speakers) {
     txtSpeakers += `
     <div class="col-sm-4">
-      <div class="team-member">
-        <img class="mx-auto rounded-circle" src="${speaker.foto}" alt="">
+      <div class="team-member">      
+        <img id="${speaker.idSpeaker}" class="mx-auto rounded-circle viewSpeaker" src="${speaker.foto}" alt="">
         <h4>${speaker.nome}</h4>
         <p class="text-muted">${speaker.cargo}</p>
         <ul class="list-inline social-buttons">`
@@ -109,6 +153,28 @@ window.onload = function() {
     `    
   }
   renderSpeakers.innerHTML = txtSpeakers
+
+
+  // Gerir clique na imagem para exibição da modal    
+  const btnView = document.getElementsByClassName("viewSpeaker")
+  for (let i = 0; i < btnView.length; i++) {
+    btnView[i].addEventListener("click", () => {         
+      for (const speaker of speakers) {
+          if (speaker.idSpeaker == btnView[i].getAttribute("id")) {
+            swal({
+              title: speaker.nome,
+              text: speaker.bio,
+              imageUrl: speaker.foto,
+              imageWidth: 400,
+              imageHeight: 400,
+              imageAlt: 'Foto do orador',
+              animation: false
+            })                 
+          }
+      }
+    })
+  }
+
 })(); 
 
 
